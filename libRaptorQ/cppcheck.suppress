@@ -1,0 +1,25 @@
+// Performance:
+//  Octet is a sinble byte. value is faster than reference.
+passedByValue:src/Parameters.hpp:73
+passedByValue:src/Parameters.hpp:78
+passedByValue:src/Parameters.hpp:83
+passedByValue:src/Parameters.hpp:88
+passedByValue:src/Parameters.hpp:99
+passedByValue:src/Parameters.hpp:104
+passedByValue:src/Parameters.hpp:114
+passedByValue:src/Parameters.hpp:124
+passedByValue:src/Parameters.hpp:132
+// "Partition" is 4 bytes anyway. just copy it.
+passedByValue:src/Interleaver.hpp:170
+passedByValue:src/Interleaver.hpp:263
+passedByValue:src/RaptorQ.hpp:143
+
+functionStatic:src/Parameters.hpp:116
+noExplicitConstructor:src/Parameters.hpp:69
+
+// Initialization is wastful if we overwrite it anyway.
+// which we do, valgrind never gives us "uninitalized value"
+uninitMemberVar:src/Parameters.hpp:68
+
+missingIncludeSystem
+
