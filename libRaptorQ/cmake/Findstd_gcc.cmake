@@ -18,7 +18,7 @@
 # along with libRaptorQ.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-file(GLOB sub-dir /usr/include/c++/[0-9].[0-9]*.[0-9]*)
+file(GLOB sub-dir /usr/include/c++/[0-9].[0-9]*.[0-9]* /usr/include/c++/[0-9].[0-9]*)
 foreach(dir ${sub-dir})
     if(IS_DIRECTORY ${dir})
         set(GCC_PATH_SUFFIXES ${GCC_PATH_SUFFIXES};${dir})
