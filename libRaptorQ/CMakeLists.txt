@@ -22,7 +22,7 @@ project (libRaptorQ)
 enable_language(CXX)
 enable_language(C)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake; ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake; ${CMAKE_MODULE_PATH})
 
 # default values
 if(NOT CMAKE_BUILD_TYPE)
@@ -106,7 +106,7 @@ find_package(eigen REQUIRED)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 # LATEX documentation
-add_subdirectory(${CMAKE_SOURCE_DIR}/doc)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/doc)
 
 
 if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/.git/ AND GIT_FOUND)
