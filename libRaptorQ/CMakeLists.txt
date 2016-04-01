@@ -32,14 +32,14 @@ endif()
 
 include(GNUInstallDirs)
 
-option(DYNAMIC_LIB "Build dynamic library" ON)
+option(DYNAMIC_LIB "Build dynamic library" OFF)
 option(STATIC_LIB "Build static library" ON)
 option(CLANG_STDLIB "Use clang's libc++" OFF)
 
 # defaults: only enable LTO/PROFILING with known compielrs
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-   option(LTO "Link Time Optimization" ON)
-   option(PROFILING "Profiling: speedup library" ON)
+   option(LTO "Link Time Optimization" OFF)
+   option(PROFILING "Profiling: speedup library" OFF)
 else()
    option(LTO "Link Time Optimization" OFF)
    option(PROFILING "Profiling: speedup library" OFF)
@@ -282,6 +282,7 @@ add_custom_target(
     Make_static_deterministic ALL
     DEPENDS deterministic.run
 )
+target_include_directories(RaptorQ_Static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif()
 
 #build dynamic library
@@ -309,47 +310,16 @@ if(DYNAMIC_LIB MATCHES "ON")
     set_property(TARGET RaptorQ PROPERTY LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 endif()
 
-
-# add main tests
-add_executable(libRaptorQ-test EXCLUDE_FROM_ALL test/rfc_test.cpp)
-    target_compile_options(
-        libRaptorQ-test PRIVATE
-        ${CXX_COMPILER_FLAGS}
-    )
-add_dependencies(libRaptorQ-test RaptorQ)
-target_link_libraries(libRaptorQ-test ${CMAKE_THREAD_LIBS_INIT} RaptorQ)
-add_custom_target(tests DEPENDS libRaptorQ-test)
-
-# build examples
-# C interface
-add_executable(test_c EXCLUDE_FROM_ALL test/test_c.c)
-    target_compile_options(
-        test_c PRIVATE
-        ${C_COMPILER_FLAGS}
-    )
-add_dependencies(test_c RaptorQ)
-target_link_libraries(test_c ${STDLIB} ${CMAKE_THREAD_LIBS_INIT} RaptorQ m)
-# cmake 2.8.12 seems to have problems understanding to link pthread...
-if(USE_PTHREADS_INIT)
-    target_link_libraries(test_c pthread)
-endif()
-
-# CPP interface
-add_executable(test_cpp EXCLUDE_FROM_ALL test/test_cpp.cpp)
-    target_compile_options(
-        test_cpp PRIVATE
-        ${CXX_COMPILER_FLAGS}
-    )
-add_dependencies(test_cpp RaptorQ)
-target_link_libraries(test_cpp ${CMAKE_THREAD_LIBS_INIT} RaptorQ)
-add_custom_target(examples DEPENDS test_c test_cpp)
-
-add_custom_target(everything DEPENDS Make_static_deterministic tests examples docs)
-
-
-install(FILES ${HEADERS} DESTINATION include/RaptorQ/)
-install(TARGETS RaptorQ RaptorQ_Static
+message("MOOO")
+if (STATIC_LIB MATCHES "ON")
+message("KOW")
+install(TARGETS RaptorQ_Static 
      LIBRARY DESTINATION lib COMPONENT libraries
      ARCHIVE DESTINATION lib COMPONENT libraries)
-
+endif (STATIC_LIB MATCHES "ON")
+if (DYNAMIC_LIB MATCHES "ON")
+install(TARGETS RaptorQ 
+     LIBRARY DESTINATION lib COMPONENT libraries
+     ARCHIVE DESTINATION lib COMPONENT libraries)
+endif (DYNAMIC_LIB MATCHES "ON")
 
