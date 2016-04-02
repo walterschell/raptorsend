@@ -103,7 +103,6 @@ endif()
 find_package(Threads REQUIRED)
 find_package(git)
 find_package(eigen REQUIRED)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 # LATEX documentation
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/doc)
@@ -247,7 +246,7 @@ if(STATIC_LIB MATCHES "ON")
         set_target_properties(RaptorQ_Static PROPERTIES OUTPUT_NAME RaptorQ)
     endif()
     target_compile_options(
-        RaptorQ_Static PRIVATE
+        RaptorQ_Static PUBLIC
         ${CXX_COMPILER_FLAGS}
     )
     if(LTO MATCHES "ON")
@@ -283,6 +282,7 @@ add_custom_target(
     DEPENDS deterministic.run
 )
 target_include_directories(RaptorQ_Static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(RaptorQ_Static PUBLIC ${EIGEN3_INCLUDE_DIR})
 endif()
 
 #build dynamic library
