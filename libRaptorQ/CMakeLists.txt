@@ -246,9 +246,10 @@ if(STATIC_LIB MATCHES "ON")
         set_target_properties(RaptorQ_Static PROPERTIES OUTPUT_NAME RaptorQ)
     endif()
     target_compile_options(
-        RaptorQ_Static PUBLIC
+        RaptorQ_Static PRIVATE
         ${CXX_COMPILER_FLAGS}
     )
+    target_compile_options(RaptorQ_Static INTERFACE "-std=c++11")
     if(LTO MATCHES "ON")
         target_compile_options(RaptorQ_Static PRIVATE -flto -fuse-ld=gold)
     endif()
