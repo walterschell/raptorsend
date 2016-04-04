@@ -49,6 +49,23 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 			outfile.write((char *) &id, sizeof(id));
 			outfile.write(symbol_buffer.c_str(), written);
 		}
+		for (auto rep_itor = block.begin_repair(); rep_itor != block.end_repair(2); ++rep_itor)
+		{
+			symbol_buffer.clear();
+			symbol_buffer.insert(symbol_buffer.begin(), SYMBOL_SIZE, '\0');
+			auto symbol_itor = symbol_buffer.begin();
+			auto written = (*rep_itor)(symbol_itor, symbol_buffer.end());
+			std::stringstream filename;
+			filename << basename << file_count++ << ".6330";
+			std::ofstream outfile(filename.str());
+			outfile.write((char *) &total_size, sizeof(total_size));
+			outfile.write((char *) &common, sizeof(common));
+			outfile.write((char *) &scheme_specific, sizeof(scheme_specific));
+			auto id = (*rep_itor).id();
+			outfile.write((char *) &id, sizeof(id));
+			outfile.write(symbol_buffer.c_str(), written);
+
+		}
 	}
 }
 
