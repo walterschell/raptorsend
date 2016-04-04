@@ -22,8 +22,8 @@ std::string read_file(const string &filename)
 
     return result;
 }
-void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, const string &basename="data");
-void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, const string &basename)
+void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &basename="data");
+void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &basename)
 {
 	const int MAX_REPAIR = 2;
 	int file_count = 0;
@@ -41,19 +41,13 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, const string &basename)
 			auto written = (*sym_itor)(symbol_itor, symbol_buffer.end());
 			std::stringstream filename;
 			filename << basename << file_count++ << ".6330";
-			cout << __LINE__ << std::endl;
 			std::ofstream outfile(filename.str());
-			cout << __LINE__ << std::endl;
+			outfile.write((char *) &total_size, sizeof(total_size));
 			outfile.write((char *) &common, sizeof(common));
-			cout << __LINE__ << std::endl;
 			outfile.write((char *) &scheme_specific, sizeof(scheme_specific));
-			cout << __LINE__ << std::endl;
 			auto id = (*sym_itor).id();
-			cout << __LINE__ << std::endl;
 			outfile.write((char *) &id, sizeof(id));
-			cout << __LINE__ << std::endl;
 			outfile.write(symbol_buffer.c_str(), written);
-			cout << __LINE__ << std::endl;
 		}
 	}
 }
@@ -69,12 +63,12 @@ int main(int argc, char *argv[])
 	cout << argv[1] << " has " << file_data.size() << " bytes\n";
 
     RaptorQ::Encoder<T_it, T_it> enc ( file_data.begin(),file_data.end(),
-    1 , SYMBOL_SIZE , 10000);
+    SYMBOL_SIZE , SYMBOL_SIZE , 10000);
 
     if ((bool) enc)
     {
         cout << "Great Success!\n";
-        save_blocks(enc, "test");
+        save_blocks(enc, file_data.size(),"test");
     }
     else
     {

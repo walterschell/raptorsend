@@ -273,7 +273,7 @@ if(STATIC_LIB MATCHES "ON")
     add_custom_command(
         OUTPUT deterministic.run
         COMMAND make_deterministic ${CMAKE_SOURCE_DIR}/lib/libRaptorQ.a
-        DEPENDS RaptorQ_Static
+        DEPENDS RaptorQ_Static make_deterministic
         COMMENT "Removing creation date from library..."
         VERBATIM
     )
