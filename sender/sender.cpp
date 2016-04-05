@@ -3,10 +3,62 @@
 #include <RaptorQ.hpp>
 #include <fstream>
 #include <sstream>
+#include <cstdint>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdio.h>
+
 using std::cout;
 using std::string;
 using T_it = typename std::string::iterator;
 const int SYMBOL_SIZE = 1444;
+class __attribute__((packed)) SymbolHeader
+{
+public:
+	uint32_t total_size;
+	RaptorQ::OTI_Common_Data common_data;
+	RaptorQ::OTI_Scheme_Specific_Data scheme_specific_data;
+	uint32_t symbol_id;
+	std::string str() const;
+};
+std::string SymbolHeader::str() const
+{
+	return std::string((char *) this, sizeof(SymbolHeader));
+}
+class UDPSocket
+{
+public:
+	UDPSocket(const std::string &ip, uint16_t port)
+	{
+		if ((fd = socket(PF_INET, SOCK_DGRAM, 0x11)) < 0)
+		{
+			perror("socket");
+			throw std::exception();
+		}
+		sockaddr_in da={0};
+		da.sin_family = AF_INET;
+		da.sin_len = 4;
+		inet_pton(AF_INET, ip.c_str(), &(da.sin_addr));
+		da.sin_port= htons(port);
+		if (connect(fd, (sockaddr *)&da, sizeof(sockaddr_in)) < 0)
+		{
+			perror("Connect");
+			throw std::exception();
+		}
+	}
+	~UDPSocket()
+	{
+		close(fd);
+	}
+	void send(const std::string &data)
+	{
+		::send(fd, data.c_str(), data.size(), 0);
+	}
+private:
+	int fd;
+};
 
 std::string read_file(const string &filename);
 std::string read_file(const string &filename)
@@ -31,6 +83,13 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 	auto scheme_specific = enc.OTI_Scheme_Specific();
 	string symbol_buffer;
 	symbol_buffer.reserve(SYMBOL_SIZE);
+	UDPSocket socket("127.0.0.1", 9999);
+	SymbolHeader symbol_header;
+	symbol_header.total_size = total_size;
+	symbol_header.common_data = common;
+	symbol_header.scheme_specific_data = scheme_specific;
+
+
 	for (auto block : enc)
 	{
 		for (auto sym_itor = block.begin_source(); sym_itor != block.end_source(); ++sym_itor)
@@ -46,8 +105,10 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 			outfile.write((char *) &common, sizeof(common));
 			outfile.write((char *) &scheme_specific, sizeof(scheme_specific));
 			auto id = (*sym_itor).id();
+			symbol_header.symbol_id = id;
 			outfile.write((char *) &id, sizeof(id));
 			outfile.write(symbol_buffer.c_str(), written);
+			socket.send(symbol_header.str() + symbol_buffer);
 		}
 		for (auto rep_itor = block.begin_repair(); rep_itor != block.end_repair(2); ++rep_itor)
 		{
