@@ -40,7 +40,9 @@ public:
 		}
 		sockaddr_in da={0};
 		da.sin_family = AF_INET;
+#ifdef	__APPLE__
 		da.sin_len = 4;
+#endif /*__APPLE__*/
 		inet_pton(AF_INET, ip.c_str(), &(da.sin_addr));
 		da.sin_port= htons(port);
 		if (connect(fd, (sockaddr *)&da, sizeof(sockaddr_in)) < 0)
