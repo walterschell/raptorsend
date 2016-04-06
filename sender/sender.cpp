@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdio.h>
-
+//define OUTPUT_FILES
 using std::cout;
 using std::string;
 using T_it = typename std::string::iterator;
@@ -18,13 +18,14 @@ class __attribute__((packed)) SymbolHeader
 {
 public:
 	uint32_t total_size;
-	RaptorQ::OTI_Common_Data common_data;
-	RaptorQ::OTI_Scheme_Specific_Data scheme_specific_data;
-	uint32_t symbol_id;
+	RaptorQ::OTI_Common_Data common_data; //uint64_t
+	RaptorQ::OTI_Scheme_Specific_Data scheme_specific_data; //uint32_t
+	uint32_t symbol_id; //uint32_t
 	std::string str() const;
 };
 std::string SymbolHeader::str() const
 {
+	//TODO: Serialize in network byte order
 	return std::string((char *) this, sizeof(SymbolHeader));
 }
 class UDPSocket
@@ -98,16 +99,19 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 			symbol_buffer.insert(symbol_buffer.begin(), SYMBOL_SIZE, '\0');
 			auto symbol_itor = symbol_buffer.begin();
 			auto written = (*sym_itor)(symbol_itor, symbol_buffer.end());
+			auto id = (*sym_itor).id();
+			symbol_header.symbol_id = id;
+#ifdef OUTPUT_FILES
 			std::stringstream filename;
 			filename << basename << file_count++ << ".6330";
 			std::ofstream outfile(filename.str());
 			outfile.write((char *) &total_size, sizeof(total_size));
 			outfile.write((char *) &common, sizeof(common));
 			outfile.write((char *) &scheme_specific, sizeof(scheme_specific));
-			auto id = (*sym_itor).id();
-			symbol_header.symbol_id = id;
+
 			outfile.write((char *) &id, sizeof(id));
 			outfile.write(symbol_buffer.c_str(), written);
+#endif /*OUTPUT_FILES*/
 			socket.send(symbol_header.str() + symbol_buffer);
 		}
 		for (auto rep_itor = block.begin_repair(); rep_itor != block.end_repair(2); ++rep_itor)
@@ -116,16 +120,19 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 			symbol_buffer.insert(symbol_buffer.begin(), SYMBOL_SIZE, '\0');
 			auto symbol_itor = symbol_buffer.begin();
 			auto written = (*rep_itor)(symbol_itor, symbol_buffer.end());
+			auto id = (*rep_itor).id();
+			symbol_header.symbol_id = id;
+#ifdef OUTPUT_FILES
 			std::stringstream filename;
 			filename << basename << file_count++ << ".6330";
 			std::ofstream outfile(filename.str());
 			outfile.write((char *) &total_size, sizeof(total_size));
 			outfile.write((char *) &common, sizeof(common));
 			outfile.write((char *) &scheme_specific, sizeof(scheme_specific));
-			auto id = (*rep_itor).id();
 			outfile.write((char *) &id, sizeof(id));
 			outfile.write(symbol_buffer.c_str(), written);
-
+#endif
+			socket.send(symbol_header.str() + symbol_buffer);
 		}
 	}
 }
