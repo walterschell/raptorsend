@@ -284,6 +284,7 @@ add_custom_target(
 )
 target_include_directories(RaptorQ_Static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(RaptorQ_Static PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_link_libraries(RaptorQ_Static INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 #build dynamic library
