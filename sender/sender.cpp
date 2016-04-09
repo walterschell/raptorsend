@@ -77,8 +77,8 @@ std::string read_file(const string &filename)
 
     return result;
 }
-void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &basename="data");
-void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &basename)
+void send_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &ip, const int port);
+void send_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const string &ip, const int port)
 {
 	const int MAX_REPAIR = 2;
 	int file_count = 0;
@@ -86,13 +86,14 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 	auto scheme_specific = enc.OTI_Scheme_Specific();
 	string symbol_buffer;
 	symbol_buffer.reserve(SYMBOL_SIZE);
-	UDPSocket socket("127.0.0.1", 9999);
+	UDPSocket socket(ip, port);
 	SymbolHeader symbol_header;
 	symbol_header.total_size = total_size;
 	symbol_header.common_data = common;
 	symbol_header.scheme_specific_data = scheme_specific;
-
-
+#ifdef OUTPUT_FILES
+	const string basename="data";
+#endif
 	for (auto block : enc)
 	{
 		for (auto sym_itor = block.begin_source(); sym_itor != block.end_source(); ++sym_itor)
@@ -141,12 +142,14 @@ void save_blocks(RaptorQ::Encoder<T_it, T_it> &enc, uint32_t total_size, const s
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    if (argc != 4)
     {
-    	cout << "Usage: " << argv[0] << " <filename\n";
+    	cout << "Usage: " << argv[0] << " <ip> <port> <filename>\n";
     	return -1;
     }
-	string file_data = read_file(argv[1]);
+    std::string ip = argv[1];
+    int port = std::atoi(argv[2]);
+	string file_data = read_file(argv[3]);
 	cout << argv[1] << " has " << file_data.size() << " bytes\n";
 
     RaptorQ::Encoder<T_it, T_it> enc ( file_data.begin(),file_data.end(),
@@ -155,7 +158,7 @@ int main(int argc, char *argv[])
     if ((bool) enc)
     {
         cout << "Great Success!\n";
-        save_blocks(enc, file_data.size(),"test");
+        send_blocks(enc, file_data.size(),ip, port);
     }
     else
     {
