@@ -35,9 +35,9 @@ void process_file(char *filename, RaptorQ::Decoder<T_it, T_it> &dec)
 
 int main(int argc, char *argv[])
 {
-	if (argc < 2)
+	if (argc < 3)
 	{
-		cout << "Usage: " << argv[0] << "<file1> [<file2> ... <fileN>]\n";
+		cout << "Usage: " << argv[0] << "<output file> <file1> [<file2> ... <fileN>]\n";
 		return -1;
 	}
 	uint32_t total_size;
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	cout << "Decoding succeeded\n";
-	std::ofstream out("outfile.bin");
+	std::ofstream out(argv[1]);
 	out.write(result.c_str(),result.size());
 	return 0;
 }
