@@ -37,18 +37,18 @@ int main(int argc, char *argv[])
 {
 	if (argc < 3)
 	{
-		cout << "Usage: " << argv[0] << "<output file> <file1> [<file2> ... <fileN>]\n";
+		cout << "Usage: " << argv[0] << " <output file> <file1> [<file2> ... <fileN>]\n";
 		return -1;
 	}
 	uint32_t total_size;
 	RaptorQ::OTI_Common_Data common;
 	RaptorQ::OTI_Scheme_Specific_Data scheme_specific;
-	std::ifstream in(argv[1]);
+	std::ifstream in(argv[2]);
 	in.read((char *) &total_size, sizeof(total_size));
 	in.read((char *) &common, sizeof(common));
 	in.read((char *) &scheme_specific, sizeof(scheme_specific));
 	RaptorQ::Decoder<T_it, T_it> dec(common, scheme_specific);
-	for (int i = 1; i < argc; i++)
+	for (int i = 2; i < argc; i++)
 	{
 		process_file(argv[i], dec);
 	}
